@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nanoparticle Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-section, .output-section {
+            flex: 1;
+        }
+        .button-section {
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            color: #333;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const NanoparticleSimulator = () => {
+            const lipids = [
+                { name: 'DSPC', min: 20, max: 40 },
+                { name: 'DSPE', min: 0.5, max: 5 },
+                { name: 'DSSM', min: 10, max: 30 },
+                { name: 'DSPS', min: 5, max: 15 },
+                { name: 'Cholesterol', min: 20, max: 40 },
+                { name: 'DC-Cholesterol', min: 10, max: 30 }
+            ];
+
+            const [inputs, setInputs] = React.useState(lipids.map(() => ''));
+            const [outputs, setOutputs] = React.useState({
+                particleSize: 0,
+                zetaPotential: 0,
+                pdi: 0
+            });
+            const [errors, setErrors] = React.useState(lipids.map(() => ''));
+
+            const handleInputChange = (index, value) => {
+                const newInputs = [...inputs];
+                newInputs[index] = value;
+                setInputs(newInputs);
+
+                // Validate input
+                const newErrors = [...errors];
+                if (value !== '' && (Number(value) < 0 || Number(value) > lipids[index].max)) {
+                    newErrors[index] = `Value should be between 0 and ${lipids[index].max}`;
+                } else {
+                    newErrors[index] = '';
+                }
+                setErrors(newErrors);
+            };
+
+            const calculateOutputs = () => {
+                const numInputs = inputs.map(Number);
+                const sum = numInputs.reduce((a, b) => a + b, 0);
+                if (sum !== 100) {
+                    alert('The sum of all components must equal 100');
+                    return;
+                }
+
+                const particleSize = Math.random() * (150 - 60) + 60;
+                const zetaPotential = Math.random() * 80 - 40;
+                const pdi = Math.random() * (0.3 - 0.04) + 0.04;
+
+                setOutputs({
+                    particleSize: particleSize.toFixed(2),
+                    zetaPotential: zetaPotential.toFixed(2),
+                    pdi: pdi.toFixed(4)
+                });
+            };
+
+            return (
+                <div className="container">
+                    <div className="input-section">
+                        <h2>Input Components</h2>
+                        {lipids.map((lipid, index) => (
+                            <div key={index} className="input-group">
+                                <label>{lipid.name}:</label>
+                                <input
+                                    type="number"
+                                    value={inputs[index]}
+                                    onChange={(e) => handleInputChange(index, e.target.value)}
+                                    min="0"
+                                    max={lipid.max}
+                                    step="0.1"
+                                />
+                                {errors[index] && <div className="error">{errors[index]}</div>}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="button-section">
+                        <button onClick={calculateOutputs}>Calculate</button>
+                    </div>
+                    <div className="output-section">
+                        <h2>Output Features</h2>
+                        <p>Particle Size: {outputs.particleSize} nm</p>
+                        <p>Zeta Potential: {outputs.zetaPotential} mV</p>
+                        <p>PDI: {outputs.pdi}</p>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<NanoparticleSimulator />, document.getElementById('root'));
+    </script>
+</body>
+</html>
